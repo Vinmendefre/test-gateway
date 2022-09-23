@@ -1,0 +1,21 @@
+version: "3.9"
+services:
+  app:
+    container_name: test-gateway
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - 8083:8083
+    expose:
+      - 8083
+    volumes:
+      - ./:/app/app
+    networks:
+      - services
+    restart: unless-stopped
+
+networks:
+  services:
+    name: Knightly
+    external: true

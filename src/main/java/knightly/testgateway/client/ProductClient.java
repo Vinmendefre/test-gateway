@@ -62,6 +62,28 @@ public class ProductClient {
         return convertJsonToProductDTOList(productReply);
     }
 
+    public void createProductStub(List<Long> componentIds, String name) {
+        ProductRequest productRequest = new ProductRequest(RequestType.createProduct, componentIds, name);
+        String productRequestJson = convertProductRequestToJson(productRequest);
+
+        String productReply = "";
+        try {
+            productReply = rabbitTemplate.convertSendAndReceive(
+                    directExchange.getName()
+                    , routingKeyProductService
+                    , productRequestJson).toString();
+        } catch (AmqpException e) {
+            logger.error("Error Connecting to Productservice via RabbitMQ");
+        }
+
+        if(checkReplyForError(productReply)) {
+            logger.error("Error while Creating Product in Product Service");
+        } else {
+            logger.info("Successfully created Product");
+        }
+
+    }
+
     private String convertProductRequestToJson(ProductRequest productRequest) {
         return new Gson().toJson(productRequest, ProductRequest.class);
     }
@@ -78,5 +100,9 @@ public class ProductClient {
                 productDTOJson,
                 new TypeToken<List<ProductDTO>>() {
                 }.getType());
+    }
+
+    private boolean checkReplyForError(String reply) {
+        return (reply.contains("[Error]"));
     }
 }

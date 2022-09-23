@@ -25,4 +25,9 @@ public class TestController {
     public List<ProductDTO> getProducts() {
         return this.productClient.makeProductRequest(Currency.donkey);
     }
+
+    @GetMapping("/createProduct")
+    public void createProduct() {
+        this.productClient.createProductStub(List.of(0L, 4L, 9L, 2L), "floomp");
+    }
 }

@@ -17,9 +17,9 @@ import org.springframework.beans.factory.annotation.Value;
 
 import java.util.List;
 
-public class ProductClient {
+public class ProductService {
 
-    private static final Logger logger = LoggerFactory.getLogger(ProductClient.class);
+    private static final Logger logger = LoggerFactory.getLogger(ProductService.class);
 
     @Value("${routing.key.product.service}")
     private String routingKeyProductService;
@@ -30,8 +30,8 @@ public class ProductClient {
     @Autowired
     DirectExchange directExchange;
 
-    public List<ComponentDTO> makeComponentRequest(Currency currency) {
-        ProductRequest productRequest = new ProductRequest(RequestType.getComponents, Currency.gold);
+    public List<ComponentDTO> getComponentDTOs(Currency currency) {
+        ProductRequest productRequest = new ProductRequest(RequestType.getComponents, currency);
         String productRequestJson = convertProductRequestToJson(productRequest);
         String productReply = "";
         try {
@@ -43,11 +43,14 @@ public class ProductClient {
             logger.error("Error Connecting to Productservice via RabbitMQ");
         }
 
+        if (checkReplyForError(productReply)){
+            throw new RuntimeException("Error in Product Service handling the Request");
+        }
         return convertJsonToComponentDTOList(productReply);
     }
 
-    public List<ProductDTO> makeProductRequest(Currency currency) {
-        ProductRequest productRequest = new ProductRequest(RequestType.getProducts, Currency.gold);
+    public List<ProductDTO> getProductDTOs(Currency currency) {
+        ProductRequest productRequest = new ProductRequest(RequestType.getProducts, currency);
         String productRequestJson = convertProductRequestToJson(productRequest);
         String productReply = "";
         try {
@@ -58,11 +61,13 @@ public class ProductClient {
         } catch (AmqpException e) {
             logger.error("Error Connecting to Productservice via RabbitMQ");
         }
-
+        if (checkReplyForError(productReply)){
+            throw new RuntimeException("Error in Product Service handling the Request");
+        }
         return convertJsonToProductDTOList(productReply);
     }
 
-    public void createProductStub(List<Long> componentIds, String name) {
+    public void createProductFromIDs(List<Long> componentIds, String name) {
         ProductRequest productRequest = new ProductRequest(RequestType.createProduct, componentIds, name);
         String productRequestJson = convertProductRequestToJson(productRequest);
 
@@ -78,10 +83,27 @@ public class ProductClient {
 
         if(checkReplyForError(productReply)) {
             logger.error("Error while Creating Product in Product Service");
+            logger.error(productReply);
         } else {
             logger.info("Successfully created Product");
         }
+    }
 
+    public String getAge(String name) {
+        ProductRequest productRequest = new ProductRequest(RequestType.getAge, name);
+        String productRequestJson = convertProductRequestToJson(productRequest);
+
+        String productReply = "";
+        try {
+            productReply = rabbitTemplate.convertSendAndReceive(
+                    directExchange.getName()
+                    , routingKeyProductService
+                    , productRequestJson).toString();
+        } catch (AmqpException e) {
+            logger.error("Error Connecting to Productservice via RabbitMQ");
+        }
+
+        return productReply;
     }
 
     private String convertProductRequestToJson(ProductRequest productRequest) {

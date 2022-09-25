@@ -1,6 +1,6 @@
 package knightly.testgateway.controller;
 
-import knightly.testgateway.client.ProductClient;
+import knightly.testgateway.client.ProductService;
 import knightly.testgateway.client.dto.ComponentDTO;
 import knightly.testgateway.client.dto.ProductDTO;
 import knightly.testgateway.enums.Currency;
@@ -14,20 +14,20 @@ import java.util.List;
 public class TestController {
 
     @Autowired
-    ProductClient productClient;
+    ProductService productService;
 
     @GetMapping("/components")
     public List<ComponentDTO> getComponents() {
-        return this.productClient.makeComponentRequest(Currency.gold);
+        return this.productService.getComponentDTOs(Currency.gold);
     }
 
     @GetMapping("/products")
     public List<ProductDTO> getProducts() {
-        return this.productClient.makeProductRequest(Currency.donkey);
+        return this.productService.getProductDTOs(Currency.donkey);
     }
 
     @GetMapping("/createProduct")
     public void createProduct() {
-        this.productClient.createProductStub(List.of(0L, 4L, 9L, 2L), "floomp");
+        this.productService.createProductStub(List.of(0L, 4L, 9L, 2L), "floomp");
     }
 }

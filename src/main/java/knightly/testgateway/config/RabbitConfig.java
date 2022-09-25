@@ -1,7 +1,6 @@
 package knightly.testgateway.config;
 
-import com.rabbitmq.client.AMQP;
-import knightly.testgateway.client.ProductClient;
+import knightly.testgateway.client.ProductService;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.DirectExchange;
@@ -36,7 +35,7 @@ public class RabbitConfig {
     }
 
     @Bean
-    public ProductClient productClient() {
-        return new ProductClient();
+    public ProductService productClient() {
+        return new ProductService();
     }
 }

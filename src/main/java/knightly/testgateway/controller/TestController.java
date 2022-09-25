@@ -28,6 +28,6 @@ public class TestController {
 
     @GetMapping("/createProduct")
     public void createProduct() {
-        this.productService.createProductStub(List.of(0L, 4L, 9L, 2L), "floomp");
+        this.productService.createProductFromIDs(List.of(0L, 4L, 9L, 2L), "floomp");
     }
 }
